@@ -1,6 +1,5 @@
-package edu.jhuapl.trinity.javafx.javafx3D;
+package concavehull;
 
-import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Point3D;
@@ -22,12 +21,11 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.Sphere;
 import javafx.stage.Stage;
-import org.fxyz3d.utils.CameraTransformer;
-
 import java.util.ArrayList;
 import java.util.Random;
 
-public class FastScatter3DTest extends Application {
+public class App extends Application {
+
     PerspectiveCamera camera = new PerspectiveCamera(true);
     public Group sceneRoot = new Group();
     public SubScene subScene;
@@ -43,7 +41,6 @@ public class FastScatter3DTest extends Application {
     private double mouseDeltaX;
     private double mouseDeltaY;
 
-    FastScatter3D fastScatter3D;
     ArrayList<Point3D> positions;
     Random rando = new Random();
     double scale = 100;
@@ -95,19 +92,15 @@ public class FastScatter3DTest extends Application {
         subScene.setCamera(camera);
 
         AmbientLight ambientLight = new AmbientLight(Color.WHITE);
-
-        fastScatter3D = new FastScatter3D(totalPoints, radius, divisions);
-        fastScatter3D.setAllVisible(true);
-        int pointCount = fastScatter3D.getPointCount();
+        int pointCount = 100;
         positions = new ArrayList<>(pointCount);
         //generate some random positions
         for (int i = 0; i < pointCount; i++) {
             positions.add(new Point3D(
-                rando.nextDouble() * scale,
-                rando.nextDouble() * scale,
-                rando.nextDouble() * scale));
+                    rando.nextDouble() * scale,
+                    rando.nextDouble() * scale,
+                    rando.nextDouble() * scale));
         }
-        fastScatter3D.updatePositionsList(positions);
 
         Sphere sphereX = new Sphere(5);
         sphereX.setTranslateX(scale);
@@ -122,7 +115,7 @@ public class FastScatter3DTest extends Application {
         sphereZ.setMaterial(new PhongMaterial(Color.BLUE));
 
         sceneRoot.getChildren().addAll(cameraTransform, ambientLight,
-            sphereX, sphereY, sphereZ, fastScatter3D);
+                sphereX, sphereY, sphereZ);
 
         subScene.setOnKeyPressed(event -> {
             //What key did the user press?
@@ -157,39 +150,6 @@ public class FastScatter3DTest extends Application {
             }
 
             change = event.isShiftDown() ? 10.0 : 1.0;
-            Point3D p3D = fastScatter3D.getCenterPoint();
-            double x = p3D.getX();
-            double y = p3D.getY();
-            double z = p3D.getZ();
-            boolean moved = false;
-            if (keycode == KeyCode.UP && event.isAltDown()) {
-                z += change;
-                moved = true;
-            }
-            if (keycode == KeyCode.DOWN && event.isAltDown()) {
-                z -= change;
-                moved = true;
-            }
-
-            if (keycode == KeyCode.LEFT) {
-                x += change;
-                moved = true;
-            }
-            if (keycode == KeyCode.RIGHT) {
-                x -= change;
-                moved = true;
-            }
-
-            if (keycode == KeyCode.UP && !event.isAltDown()) {
-                y -= change;
-                moved = true;
-            }
-            if (keycode == KeyCode.DOWN && !event.isAltDown()) {
-                y += change;
-                moved = true;
-            }
-            if (moved)
-                fastScatter3D.setCenterPoint(new Point3D(x, y, z));
 
         });
 
@@ -201,40 +161,22 @@ public class FastScatter3DTest extends Application {
         Scene scene = new Scene(stackPane, 1000, 1000);
         scene.setOnMouseEntered(event -> subScene.requestFocus());
 
-        primaryStage.setTitle("FastScatter3D Test");
+        primaryStage.setTitle("Concave Hull Test");
         primaryStage.setScene(scene);
         primaryStage.show();
-
-        AnimationTimer animationTimer = new AnimationTimer() {
-            long sleepNs = 0;
-            long prevTime = 0;
-            long NANOS_IN_MILLI = 1_000_000;
-
-            @Override
-            public void handle(long now) {
-                sleepNs = hyperspaceRefreshRate * NANOS_IN_MILLI;
-                if ((now - prevTime) < sleepNs) return;
-                prevTime = now;
-                updatePositions();
-            }
-
-            ;
-        };
-        animationTimer.start();
     }
 
-    //generate some random positions
-    private void updatePositions() {
-        int pointCount = fastScatter3D.getPointCount();
-        for (int i = 0; i < pointCount; i++) {
-            positions.set(i, new Point3D(
-                rando.nextDouble() * scale,
-                rando.nextDouble() * scale,
-                rando.nextDouble() * scale));
-        }
-        fastScatter3D.updatePositionsList(positions);
-    }
-
+//    //generate some random positions
+//    private void updatePositions() {
+//        int pointCount = fastScatter3D.getPointCount();
+//        for (int i = 0; i < pointCount; i++) {
+//            positions.set(i, new Point3D(
+//                rando.nextDouble() * scale,
+//                rando.nextDouble() * scale,
+//                rando.nextDouble() * scale));
+//        }
+//        fastScatter3D.updatePositionsList(positions);
+//    }
     private void mouseDragCamera(MouseEvent me) {
         mouseOldX = mousePosX;
         mouseOldY = mousePosY;
@@ -255,12 +197,12 @@ public class FastScatter3DTest extends Application {
         if (me.isPrimaryButtonDown()) {
             if (me.isAltDown()) { //roll
                 cameraTransform.rz.setAngle(
-                    ((cameraTransform.rz.getAngle() + mouseDeltaX * modifierFactor * modifier * 2.0) % 360 + 540) % 360 - 180); // +
+                        ((cameraTransform.rz.getAngle() + mouseDeltaX * modifierFactor * modifier * 2.0) % 360 + 540) % 360 - 180); // +
             } else {
                 cameraTransform.ry.setAngle(
-                    ((cameraTransform.ry.getAngle() + mouseDeltaX * modifierFactor * modifier * 2.0) % 360 + 540) % 360 - 180); // +
+                        ((cameraTransform.ry.getAngle() + mouseDeltaX * modifierFactor * modifier * 2.0) % 360 + 540) % 360 - 180); // +
                 cameraTransform.rx.setAngle(
-                    ((cameraTransform.rx.getAngle() - mouseDeltaY * modifierFactor * modifier * 2.0) % 360 + 540) % 360 - 180);
+                        ((cameraTransform.rx.getAngle() - mouseDeltaY * modifierFactor * modifier * 2.0) % 360 + 540) % 360 - 180);
             }
         } else if (me.isMiddleButtonDown()) {
             cameraTransform.t.setX(cameraTransform.t.getX() + mouseDeltaX * modifierFactor * modifier * 0.3); // -
@@ -269,6 +211,6 @@ public class FastScatter3DTest extends Application {
     }
 
     public static void main(String[] args) {
-        Application.launch(FastScatter3DTest.class, args);
+        Application.launch(App.class, args);
     }
 }
